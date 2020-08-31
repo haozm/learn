@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:batch="http://www.springframework.org/schema/batch"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd">
+    <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource">
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+        <property name="jdbcUrl"
+                  value="jdbc:mysql://localhost:3306/BATCH_JOB?allowMultiQueries=true&amp;useUnicode=true&amp;characterEncoding=UTF-8&amp;autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;serverTimezone=Asia/Shanghai"/>
+        <property name="username" value="root"/>
+        <property name="password" value="123456"/>
+        <property name="readOnly" value="false"/>
+        <property name="connectionTimeout" value="30000"/>
+        <property name="idleTimeout" value="600000"/>
+        <property name="maxLifetime" value="1800000"/>
+        <property name="maximumPoolSize" value="2"/>
+        <property name="minimumIdle" value="2"/>
+    </bean>
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <batch:job-repository id="jobRepository" data-source="dataSource" table-prefix="batch_"
+                          transaction-manager="transactionManager" isolation-level-for-create="SERIALIZABLE"/>
+    <bean id="jobExplorer" class="org.springframework.batch.core.explore.support.JobExplorerFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+        <property name="jobRepository" ref="jobRepository"/>
+    </bean>
+    <bean id="jobJobRegistry" class="org.springframework.batch.core.configuration.support.MapJobRegistry"/>
+    <bean id="jobOperator" class="org.springframework.batch.core.launch.support.SimpleJobOperator">
+        <property name="jobLauncher" ref="jobLauncher"/>
+        <property name="jobExplorer" ref="jobExplorer"/>
+        <property name="jobRepository" ref="jobRepository"/>
+        <property name="jobRegistry" ref="jobJobRegistry"/>
+    </bean>
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <constructor-arg name="dataSource" ref="dataSource"/>
+    </bean>
+    <bean class="org.springframework.batch.core.scope.StepScope"/>
+    <bean id="demoReaderAndWrite" class="org.learn.batch.DemoReaderAndWrite" scope="step">
+        <property name="jdbcTemplate" ref="jdbcTemplate"/>
+        <property name="factoryId" value="#{jobParameters[factoryId]}"/>
+    </bean>
+    <bean id="demoItemProcessor" class="org.learn.batch.DemoItemProcessor"/>
+
+    <bean id="demoItemReader" class="org.learn.batch.DemoItemReader" scope="step">
+        <property name="jdbcTemplate" ref="jdbcTemplate"/>
+        <property name="factoryId" value="#{jobParameters[factoryId]}"/>
+    </bean>
+    <batch:job id="demoJob" job-repository="jobRepository" restartable="true">
+        <batch:step id="step01">
+            <batch:tasklet allow-start-if-complete="true">
+                <batch:chunk reader="demoItemReader" processor="demoItemProcessor" writer="demoReaderAndWrite"
+                             commit-interval="50"/>
+            </batch:tasklet>
+        </batch:step>
+    </batch:job>
+</beans>

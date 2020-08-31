@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/integration https://www.springframework.org/schema/integration/spring-integration.xsd">
+    <bean id="messagingTemplate" class="org.springframework.integration.core.MessagingTemplate"/>
+
+    <int:publish-subscribe-channel id="event_bus_channel" ignore-failures="true"/>
+
+    <int:publish-subscribe-channel id="pub_bus_channel" ignore-failures="true"/>
+    <int:publish-subscribe-channel id="conf_bus_channel" ignore-failures="true"/>
+
+    <int:header-value-router input-channel="event_bus_channel" header-name="tag"
+                             default-output-channel="errorChannel"
+                             resolution-required="false">
+        <int:mapping value="pud" channel="pub_bus_channel"/>
+        <int:mapping value="conf" channel="conf_spliter_channel"/>
+    </int:header-value-router>
+
+    <int:publish-subscribe-channel id="conf_spliter_channel" ignore-failures="true"/>
+    <int:splitter input-channel="conf_spliter_channel" output-channel="conf_bus_channel"
+                  discard-channel="errorChannel"/>
+
+    <bean id="messageBuilderHelper" class="org.learn.springchannel.MessageBuilderHelper"/>
+    <int:outbound-channel-adapter channel="pub_bus_channel" ref="messageBuilderHelper" method="receivePub"/>
+    <int:outbound-channel-adapter channel="conf_bus_channel" ref="messageBuilderHelper" method="receiveConf"/>
+</beans>
