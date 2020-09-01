@@ -49,7 +49,6 @@ public class MessageBuilderHelperTest {
                         .setHeader("index", index).build();
                 messagingTemplate.send("event_bus_channel", message);
             }
-
         }
 
     }

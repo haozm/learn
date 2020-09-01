@@ -15,10 +15,18 @@ public class DemoItemReader extends AbstractItemStreamItemReader<Map<String, Obj
 
     private JdbcTemplate jdbcTemplate;
     private String factoryId;
+    int index = 0;
 
     @Override
     public void open(ExecutionContext executionContext) {
         super.open(executionContext);
+        if (executionContext.containsKey("index")) {
+            index = executionContext.getInt("index");
+        } else {
+            executionContext.putInt("index", 0);
+            index = 0;
+        }
+        System.out.println(String.format("index init value is %d", executionContext.getInt("index")));
     }
 
     @Override
@@ -27,6 +35,8 @@ public class DemoItemReader extends AbstractItemStreamItemReader<Map<String, Obj
             Map<String, Object> map = this.jdbcTemplate
                     .queryForMap("SELECT * FROM batch_job.prod_equipment_up_axis_detail WHERE factory_id = ? AND tag = 0 LIMIT 1;", factoryId);
             this.jdbcTemplate.update("UPDATE batch_job.prod_equipment_up_axis_detail SET tag =1 WHERE up_axis_id = ?", MapUtils.getString(map, "up_axis_id"));
+            index++;
+            if (index == 10) return null;
             return map;
         } catch (EmptyResultDataAccessException e) {
             return null;
@@ -34,8 +44,9 @@ public class DemoItemReader extends AbstractItemStreamItemReader<Map<String, Obj
     }
 
     @Override
-    public void close() {
-        super.close();
+    public void update(ExecutionContext executionContext) {
+        executionContext.putInt("index", index);
+        super.update(executionContext);
     }
 
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
