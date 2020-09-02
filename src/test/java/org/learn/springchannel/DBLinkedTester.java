@@ -26,7 +26,7 @@ public class DBLinkedTester implements ApplicationContextAware {
     public void test() throws Exception {
         Job demoJob = appCtx.getBean("demoJob", Job.class);
         JobParametersBuilder jpb = new JobParametersBuilder();
-        JobParameters jobParameters = jpb.addString("today", "2020-08-19")
+        JobParameters jobParameters = jpb.addString("today", "2020-09-10")
                 .addString("factoryId", "009575").toJobParameters();
         jobLauncher.run(demoJob, jobParameters);
     }
