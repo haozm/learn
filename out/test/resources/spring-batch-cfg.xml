@@ -50,7 +50,13 @@
         <property name="factoryId" value="#{jobParameters[factoryId]}"/>
     </bean>
     <batch:job id="demoJob" job-repository="jobRepository" restartable="true">
-        <batch:step id="step01">
+        <batch:step id="step01" next="step02">
+            <batch:tasklet allow-start-if-complete="true">
+                <batch:chunk reader="demoItemReader" processor="demoItemProcessor" writer="demoReaderAndWrite"
+                             commit-interval="50"/>
+            </batch:tasklet>
+        </batch:step>
+        <batch:step id="step02">
             <batch:tasklet allow-start-if-complete="true">
                 <batch:chunk reader="demoItemReader" processor="demoItemProcessor" writer="demoReaderAndWrite"
                              commit-interval="50"/>
