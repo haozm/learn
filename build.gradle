@@ -7,6 +7,8 @@ version '1.0-SNAPSHOT'
 sourceCompatibility = '1.8'
 
 repositories {
+    maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+    maven{ url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
     mavenCentral()
 }
 
@@ -20,19 +22,29 @@ dependencies {
 // https://mvnrepository.com/artifact/org.springframework.batch/spring-batch-core
     compile group: 'org.springframework.batch', name: 'spring-batch-core', version: '4.2.4.RELEASE'
 // https://mvnrepository.com/artifact/mysql/mysql-connector-java
-    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.21'
+ //   compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.21'
 // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
     compile group: 'com.zaxxer', name: 'HikariCP', version: '3.4.5'
     // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    // https://mvnrepository.com/artifact/com.google.guava/guava
+    compile group: 'com.google.guava', name: 'guava', version: '30.1-jre'
     compile group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
     compile 'org.springframework.amqp:spring-rabbit:2.2.11.RELEASE'
 // https://mvnrepository.com/artifact/org.springframework/spring-jdbc
     compile group: 'org.springframework', name: 'spring-jdbc', version: '5.2.8.RELEASE'
-    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+    // https://mvnrepository.com/artifact/ch.qos.logback/logback-core
+    compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+    // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+// https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+
     // https://mvnrepository.com/artifact/org.springframework/spring-tx
     compile group: 'org.springframework', name: 'spring-tx', version: '5.2.8.RELEASE'
     compile group: 'org.springframework.integration', name: 'spring-integration-core', version: '5.3.2.RELEASE'
     compile group: 'org.springframework', name: 'spring-test', version: '5.2.8.RELEASE'
     compile "org.springframework.integration:spring-integration-event:5.3.2.RELEASE"
+    compile "org.springframework.integration:spring-integration-stream:5.3.2.RELEASE"
+    compile "org.springframework.integration:spring-integration-syslog:5.3.2.RELEASE"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
