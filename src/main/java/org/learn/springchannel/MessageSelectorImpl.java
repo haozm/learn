@@ -14,7 +14,7 @@ public class MessageSelectorImpl implements MessageSelector {
         if (payload instanceof Map) {
             Map<String, Object> mapPayload = (Map<String, Object>) payload;
             int index = MapUtils.getIntValue(mapPayload, "index", 0);
-            return index >= 1500;
+            return index >= 1000;
         }
         return false;
     }

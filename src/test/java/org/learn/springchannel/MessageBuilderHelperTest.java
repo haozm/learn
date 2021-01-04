@@ -11,8 +11,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.core.MessagingTemplate;
 import org.springframework.integration.endpoint.PollingConsumer;
+import org.springframework.integration.filter.MessageFilter;
+import org.springframework.integration.handler.BridgeHandler;
 import org.springframework.integration.handler.LoggingHandler;
+import org.springframework.integration.handler.advice.HandleMessageAdviceAdapter;
 import org.springframework.integration.handler.advice.RateLimiterRequestHandlerAdvice;
+import org.springframework.integration.scheduling.PollSkipAdvice;
+import org.springframework.integration.scheduling.SimplePollSkipStrategy;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -37,8 +42,11 @@ public class MessageBuilderHelperTest {
     final Logger logger = LoggerFactory.getLogger(MessageBuilderHelperTest.class);
     @Autowired
     private MessagingTemplate messagingTemplate;
-//    QueueChannel
-
+    //    QueueChannel
+//    BridgeHandler
+//    MessageFilter
+//    HandleMessageAdviceAdapter
+//    RateLimiterRequestHandlerAdvice
     @Autowired
     private ApplicationContext appCtx;
 
@@ -109,4 +117,35 @@ public class MessageBuilderHelperTest {
             index++;
         }
     }
+
+    //    PollSkipAdvice
+    @Test
+    public void failoverChannel() {
+        if (logger.isDebugEnabled())
+            logger.debug("[{}] start..................", "failoverChannel()");
+        Random random = new Random();
+        for (int i = 0; i < 2; i++) {
+            int index = random.nextInt(2000);
+            Map<String, Object> payload = Maps.newHashMap();
+            payload.put("index", index);
+            payload.put("factory", String.format("factory=%d", index));
+            Message<?> message = MessageBuilder.withPayload(payload).setHeader("tag", "pud")
+                    .setHeader("index", index).build();
+            messagingTemplate.send("failoverChannel", message);
+        }
+    }
+//    SimplePollSkipStrategy
+
+    @Test
+    public void channelInterceptor() {
+        if (logger.isDebugEnabled())
+            logger.debug("[{}] start..................", "channelInterceptor()");
+        Map<String, Object> payload = Maps.newHashMap();
+        payload.put("index", 1500);
+        payload.put("factory", String.format("factory=%d", 1500));
+        Message<?> message = MessageBuilder.withPayload(payload).setHeader("tag", "pud")
+                .setHeader("index", 1500).build();
+        messagingTemplate.send("event_bus_channel", message);
+    }
+
 }

@@ -10,6 +10,7 @@
 
     <int:publish-subscribe-channel id="event_bus_channel" ignore-failures="true">
         <int:interceptors>
+            <int:ref bean="channelInterceptorImpl"/>
             <int:wire-tap channel="logger"/>
         </int:interceptors>
     </int:publish-subscribe-channel>
@@ -23,7 +24,8 @@
     <task:executor id="myExec" pool-size="128" queue-capacity="2048"/>
     <int:logging-channel-adapter id="logger" level="info"/>
     <bean id="indexMessageSelector" class="org.learn.springchannel.MessageSelectorImpl"/>
-    <int:filter input-channel="event_bus_channel" output-channel="pub_bus_channel"
+    <bean id="channelInterceptorImpl" class="org.learn.springchannel.ChannelInterceptorImpl"/>
+    <int:filter input-channel="event_bus_channel" output-channel="conf_bus_channel"
                 ref="indexMessageSelector" discard-channel="nullChannel"/>
     <int:publish-subscribe-channel id="pub_bus_channel" ignore-failures="true" task-executor="myExec"/>
 
@@ -39,11 +41,23 @@
     <!--    <int:outbound-channel-adapter channel="pub_bus_channel" ref="messageBuilderHelper" method="delayConf"/>-->
 
     <int:channel id="queueChannel">
-        <int:queue />
+        <int:queue/>
     </int:channel>
 
     <int:bridge input-channel="queueChannel" output-channel="pub_bus_channel">
         <int:poller fixed-rate="50"/>
     </int:bridge>
 
+    <int:channel id="failoverChannel">
+        <int:dispatcher failover="true"/>
+    </int:channel>
+
+    <int:chain input-channel="failoverChannel">
+        <int:filter ref="indexMessageSelector" throw-exception-on-rejection="true"/>
+        <int:logging-channel-adapter id="logger" level="info"/>
+    </int:chain>
+
+    <int:chain input-channel="failoverChannel">
+        <int:logging-channel-adapter id="logger" level="info"/>
+    </int:chain>
 </beans>
